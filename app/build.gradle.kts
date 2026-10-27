@@ -100,9 +100,7 @@ android {
 }
 
 kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.fromTarget(libs.versions.android.jvm.get()))
-    }
+    jvmToolchain(17)
 }
 
 dependencies {
