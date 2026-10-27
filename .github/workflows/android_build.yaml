@@ -26,7 +26,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           validate-wrappers: true
-          gradle-home-cache-cleanup: true
+        
 
       - name: Build Project with gradle
         run: ./gradlew assembleDebug -x ktlintCheck -x test
