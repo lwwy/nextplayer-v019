@@ -1,4 +1,4 @@
-
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -32,9 +32,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.toVersion(libs.versions.android.jvm.get().toInt())
         targetCompatibility = JavaVersion.toVersion(libs.versions.android.jvm.get().toInt())
-    }
-kotlinOptions {
-        jvmTarget = libs.versions.android.jvm.get()
     }
 
     buildTypes {
@@ -102,6 +99,12 @@ kotlinOptions {
     }
 }
 
+// 👇 这里是修复报错的关键：将 kotlin 编译配置移到了 android 块外面
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(libs.versions.android.jvm.get()))
+    }
+}
 
 dependencies {
 
