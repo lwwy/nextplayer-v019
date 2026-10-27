@@ -303,16 +303,23 @@ fun LargeBatteryIndicator(modifier: Modifier = Modifier) {
         }
     }
 
+    // 👇 高级 Material 色彩判断：大于 20% 为绿，小于等于 20% 为红
+    val textColor = if (batteryLevel > 20) {
+        Color(0xFF4CAF50) // Material Green
+    } else {
+        Color(0xFFFF5252) // Material Red
+    }
+
     Text(
         text = "$batteryLevel%",
-        color = Color.White,
-        fontSize = 32.sp, // 觉得不够大可以继续改这个数字，比如 36.sp
+        color = textColor,
+        fontSize = 48.sp, // 👈 适合 12.1 寸平板的巨大字号
         fontWeight = FontWeight.Bold,
         modifier = modifier
             .background(
-                color = Color.Black.copy(alpha = 0.5f),
+                color = Color.Black.copy(alpha = 0.65f), // 黑色半透明背景托底，色彩更鲜艳
                 shape = RoundedCornerShape(8.dp)
             )
-            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     )
 }
