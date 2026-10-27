@@ -5,16 +5,20 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,6 +37,7 @@ import dev.anilbeesetti.nextplayer.feature.player.state.rememberTapGestureState
 import dev.anilbeesetti.nextplayer.feature.player.state.rememberVideoZoomAndContentScaleState
 import dev.anilbeesetti.nextplayer.feature.player.state.rememberVolumeAndBrightnessGestureState
 import dev.anilbeesetti.nextplayer.feature.player.state.rememberVolumeState
+import dev.anilbeesetti.nextplayer.feature.player.ui.LargeBatteryIndicator // 👈 导入电量组件
 import dev.anilbeesetti.nextplayer.feature.player.ui.PlayerErrorDialogs
 import dev.anilbeesetti.nextplayer.feature.player.ui.PlayerGestures
 import dev.anilbeesetti.nextplayer.feature.player.ui.PlayerVerticalGestureIndicators
@@ -208,9 +213,17 @@ internal fun MediaPlayerContent(
                 activeGesture = volumeAndBrightnessGestureState.activeGesture,
                 volumePercentage = volumeState.volumePercentage,
                 maxVolumePercentage = volumeState.maxVolumePercentage,
-                brightnessPercentage = brightnessState.brightnessPercentage,
+                brightnessPercentage = brightnessState.percentage,
             )
         }
+
+        // 👇 把电量组件放在最外层 Box 的末尾，确保一直常驻显示在右上角
+        LargeBatteryIndicator(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(top = 12.dp, end = 16.dp)
+        )
     }
 
     PlayerErrorDialogs(
