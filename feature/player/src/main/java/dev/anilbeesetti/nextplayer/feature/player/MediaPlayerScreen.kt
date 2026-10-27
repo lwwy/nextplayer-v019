@@ -7,17 +7,26 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,7 +45,6 @@ import dev.anilbeesetti.nextplayer.feature.player.state.rememberTapGestureState
 import dev.anilbeesetti.nextplayer.feature.player.state.rememberVideoZoomAndContentScaleState
 import dev.anilbeesetti.nextplayer.feature.player.state.rememberVolumeAndBrightnessGestureState
 import dev.anilbeesetti.nextplayer.feature.player.state.rememberVolumeState
-import dev.anilbeesetti.nextplayer.feature.player.ui.LargeBatteryIndicator
 import dev.anilbeesetti.nextplayer.feature.player.ui.PlayerErrorDialogs
 import dev.anilbeesetti.nextplayer.feature.player.ui.PlayerGestures
 import dev.anilbeesetti.nextplayer.feature.player.ui.PlayerVerticalGestureIndicators
@@ -212,12 +220,11 @@ internal fun MediaPlayerContent(
                 activeGesture = volumeAndBrightnessGestureState.activeGesture,
                 volumePercentage = volumeState.volumePercentage,
                 maxVolumePercentage = volumeState.maxVolumePercentage,
-                // 👇 修复了这里的拼写错误，之前少写了 brightness
                 brightnessPercentage = brightnessState.brightnessPercentage,
             )
         }
 
-        // 显示电量
+        // 👇 显示大号电量
         LargeBatteryIndicator(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -263,4 +270,49 @@ private fun MediaPlayerContentPreview() {
             onAction = {},
         )
     }
+}
+
+// ==========================================
+// 下面是直接写进同一个文件的电量组件代码
+// ==========================================
+@Composable
+fun LargeBatteryIndicator(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var batteryLevel by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(Unit) {
+        val receiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
+                val level = intent?.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                val scale = intent?.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, 100) ?: 100
+                if (level >= 0 && scale > 0) {
+                    batteryLevel = level * 100 / scale
+                }
+            }
+        }
+
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
+    Text(
+        text = "$batteryLevel%",
+        color = Color.White,
+        fontSize = 32.sp, // 觉得不够大可以继续改这个数字，比如 36.sp
+        fontWeight = FontWeight.Bold,
+        modifier = modifier
+            .background(
+                color = Color.Black.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    )
 }
